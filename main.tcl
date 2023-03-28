@@ -22,7 +22,6 @@ proc newTextInput { inputId } {
 
 # SIDEBAR MENU ITEM
 proc newMenuItem { itemId itemText } {
-    #return [button .$itemId -font {Helvetica -12} -text $itemText -command [list menuItemClicked $itemText] -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
     return [label .$itemId -font {Helvetica -12} -text $itemText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx 10]
 }
 
@@ -130,7 +129,7 @@ proc addCommentTags {w} {
     while 1 {
         set cur [$w search "\#" $cur end]
         if {$cur eq ""} {break}
-        # Don't highlight if escaped
+        # Don't comment out if escaped
         if {[$w get "$cur - 1 char"] ne "\\"} {
             $w tag add comment $cur "$cur lineend"
             $w tag remove bracket $cur "$cur lineend"
@@ -172,71 +171,6 @@ foreach file $files {
     set .fileId [newMenuItem $fileId $file]
     bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
     place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
-    #set .fileId [label .$fileId -font {Helvetica -12} -text $file -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
-    #bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
-    #place .$fileId -in .sidebar -x 10 -y $sbY -width 140 -height 26
     incr sbY 26
     incr fileId
 }
-
-#puts [format "%s: %s" Clicked $origin]
-#button .$fileId -text $file -command [list puts $fileId]
-#cd ~
-#button .$fileHandle -text $file -command buttonClicked -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -font {Helvetica -12}
-
-# AVAILABLE FONTS
-# puts [font families]
-
-#place $searchInputHandle -x 10 -y 10 -width 140 -height 30
-#puts $searchInputHandle
-#set textInputHandle [text .myText -font {Helvetica -16} -background gray20 -foreground gray80 -borderwidth 0 -highlightthickness 0 -padx 15 -pady 15]
-# pack .myEntry -side left -anchor n -expand false
-# grid $emtru
-
-# grid -column, -columnspan, -in, -ipadx, -ipady, -padx, -pady, -row, -rowspan, or -sticky
-# grid .body -column 160 -row 0 -columnspan 480
-# grid .sidebar -column 0 -row 0 -columnspan 160
-
-# grid [label .myLabel -text "Label Widget" -textvariable labelText]
-# grid [text .myText -width 20 -height 5]
-# .myText insert 1.0 "Text\nWidget\n"
-# grid [entry .myEntry -text "Entry Widget" -textvariable labelText -font {Georgia -16}]
-
-# grid [message .myMessage -background gray -foreground white -textvariable labelText]
-# grid [button .myButton1  -text "Button" -command "set labelText clicked"]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

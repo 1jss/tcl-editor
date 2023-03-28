@@ -22,7 +22,8 @@ proc newTextInput { inputId } {
 
 # SIDEBAR MENU ITEM
 proc newMenuItem { itemId itemText } {
-    return [button .$itemId -font {Helvetica -12} -text $itemText -command [list menuItemClicked $itemText] -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
+    #return [button .$itemId -font {Helvetica -12} -text $itemText -command [list menuItemClicked $itemText] -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
+    return [label .$itemId -font {Helvetica -12} -text $itemText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx 10]
 }
 
 # TEXT BOX
@@ -169,7 +170,11 @@ set files [glob *]
 set fileId 0
 foreach file $files {
     set .fileId [newMenuItem $fileId $file]
+    bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
     place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
+    #set .fileId [label .$fileId -font {Helvetica -12} -text $file -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
+    #bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
+    #place .$fileId -in .sidebar -x 10 -y $sbY -width 140 -height 26
     incr sbY 26
     incr fileId
 }
@@ -178,34 +183,6 @@ foreach file $files {
 #button .$fileId -text $file -command [list puts $fileId]
 #cd ~
 #button .$fileHandle -text $file -command buttonClicked -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -font {Helvetica -12}
-
-# COLOR PREVIEWS
-# frame .graybox1 -background gray0 -height 10 -width 10
-# place .graybox1 -x 160 -y 0
-
-# frame .graybox2 -background gray5 -height 10 -width 10
-# place .graybox2 -x 160 -y 10
-
-# frame .graybox3 -background gray10 -height 10 -width 10
-# place .graybox3 -x 160 -y 20
-
-# frame .graybox4 -background gray15 -height 10 -width 10
-# place .graybox4 -x 160 -y 30
-
-# frame .graybox5 -background gray20 -height 10 -width 10
-# place .graybox5 -x 160 -y 40
-
-# frame .graybox6 -background gray25 -height 10 -width 10
-# place .graybox6 -x 160 -y 50
-
-# frame .graybox7 -background gray30 -height 10 -width 10
-# place .graybox7 -x 160 -y 60
-
-# frame .graybox8 -background gray35 -height 10 -width 10
-# place .graybox8 -x 160 -y 70
-
-# frame .graybox9 -background gray40 -height 10 -width 10
-# place .graybox9 -x 160 -y 80
 
 # AVAILABLE FONTS
 # puts [font families]
@@ -227,6 +204,7 @@ foreach file $files {
 
 # grid [message .myMessage -background gray -foreground white -textvariable labelText]
 # grid [button .myButton1  -text "Button" -command "set labelText clicked"]
+
 
 
 

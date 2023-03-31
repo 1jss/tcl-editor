@@ -1,8 +1,8 @@
-# Rubrik
+# Heading 1
 
-## Subheading
+## Heading 2
 
-### Third level
+### Heading 3
 
 *Italic*
 

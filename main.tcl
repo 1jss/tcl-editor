@@ -11,7 +11,7 @@ frame .sidebar -background gray0 -height 480 -width 160
 pack .sidebar -side left -anchor w -expand false -fill y
 
 # BODY FRAME
-frame .body -background gray5 -height 480 -width 480
+frame .body -background gray10 -height 480 -width 480
 pack .body -side left -anchor w -expand true -fill both -after .sidebar
 
 # DOCUMENT VARIABLES
@@ -30,7 +30,7 @@ proc highlight {} {
 
 # NORMAL INPUT
 proc newTextInput { inputId } {
-    return [text .$inputId -font {Helvetica -12} -background gray10 -foreground gray50 -borderwidth 0 -highlightthickness 1 -highlightcolor gray25 -highlightbackground gray15 -selectborderwidth 0 -selectbackground turquoise -selectforeground turquoise4 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 5 -pady 5]
+    return [text .$inputId -font {Helvetica -12} -background gray15 -foreground gray50 -borderwidth 0 -highlightthickness 1 -highlightcolor gray30 -highlightbackground gray20 -selectborderwidth 0 -selectbackground turquoise -selectforeground turquoise4 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 5 -pady 5]
 }
 
 # SIDEBAR MENU ITEM
@@ -40,7 +40,7 @@ proc newMenuItem { itemId itemText } {
 
 # TEXT BOX
 proc newTextBox { inputId } {
-    return [text .$inputId -font {Courier -12} -background gray5 -foreground gray70 -borderwidth 0 -highlightthickness 0 -selectbackground DarkSlateGray -selectforeground gray80 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 15 -pady 15 -undo true -autoseparators true -wrap word ]
+    return [text .$inputId -font {Courier -12} -background gray10 -foreground gray70 -borderwidth 0 -highlightthickness 0 -selectbackground DarkSlateGray -selectforeground gray80 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 15 -pady 15 -undo true -autoseparators true -wrap word ]
 }
 
 proc menuItemClicked { origin } {
@@ -96,12 +96,16 @@ place .textBoxHandle -in .body -relwidth 1.0 -relheight 1.0
 
 # EVENT LISTENERS
 event add <<Save>> <Control-s>
+event add <<Save>> <Command-s>
 bind . <<Save>> {saveFile}
 event add <<Refresh>> <Control-r>
+event add <<Refresh>> <Command-r>
 bind . <<Refresh>> {fillSidebarFileMenu}
 
 # FILE LIST
 fillSidebarFileMenu
+
+
 
 
 

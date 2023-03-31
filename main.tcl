@@ -5,6 +5,7 @@ source highlight-md.tcl
 
 wm title . "Textor"
 wm geometry . 640x480+100+100
+wm iconphoto . [image create photo -file icon.gif]
 
 # SIDEBAR FRAME
 frame .sidebar -background gray0 -height 480 -width 160
@@ -18,7 +19,7 @@ pack .body -side left -anchor w -expand true -fill both -after .sidebar
 set activeFile ""
 set activeFileType ""
 
-# SELECT HIGHLIGHT
+# SELECT AND APPLY HIGHLIGHT
 proc highlight {} {
     global activeFileType
     if {$activeFileType=="tcl"} {
@@ -75,13 +76,17 @@ proc fillSidebarFileMenu {} {
     set sbY 46
     set files [glob *]
     set fileId 0
-
     foreach file $files { 
         destroy .$fileId
         set .fileId [newMenuItem $fileId $file]
         bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
         place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
         incr sbY 26
+        incr fileId
+    }
+    # Empty the rest of the list
+    while {$fileId < 100} {
+        destroy .$fileId
         incr fileId
     }
 }
@@ -104,18 +109,6 @@ bind . <<Refresh>> {fillSidebarFileMenu}
 
 # FILE LIST
 fillSidebarFileMenu
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,5 +1,7 @@
 #!/usr/bin/wish
 # https://tcl.tk/man/tcl8.4/
+source highlight-tcl.tcl
+source highlight-md.tcl
 
 wm title . "Textor"
 wm geometry . 640x480+100+100
@@ -14,6 +16,17 @@ pack .body -side left -anchor w -expand true -fill both -after .sidebar
 
 # DOCUMENT VARIABLES
 set activeFile ""
+set activeFileType ""
+
+# SELECT HIGHLIGHT
+proc highlight {} {
+    global activeFileType
+    if {$activeFileType=="tcl"} {
+        highlightTcl .textBoxHandle
+    } elseif {$activeFileType=="md"} {
+        highlightMd .textBoxHandle
+    }
+}
 
 # NORMAL INPUT
 proc newTextInput { inputId } {
@@ -32,11 +45,15 @@ proc newTextBox { inputId } {
 
 proc menuItemClicked { origin } {
     global activeFile
+    global activeFileType
     set activeFile $origin
+    set activeFileType [lrange [split $activeFile .] end end]
+
     set fileReader [open $activeFile r]
     .textBoxHandle delete 0.0 end
     .textBoxHandle insert 0.0 [read $fileReader]
     close $fileReader
+    
     highlight
 }
 
@@ -52,109 +69,26 @@ proc saveFile {} {
     highlight
 }
 
-# ADDS BRACKET TAGS
-proc addBracketTags {w} {
-    set brackets [ list "\{" "\}" "\[" "\]" "\"" "\<" "\>"]
-    foreach bracket $brackets {
-        set cur 1.0
-        while 1 {
-            set cur [$w search $bracket $cur end]
-            if {$cur eq ""} {break}
-            $w tag add bracket $cur "$cur + 1 char"
-            set cur [$w index "$cur + 1 char"]
-        }
+# FILLS SIDEBAR FILE MENU
+proc fillSidebarFileMenu {} {
+    # Sidebar Y position iterator to place widgets at
+    set sbY 46
+    set files [glob *]
+    set fileId 0
+
+    foreach file $files { 
+        destroy .$fileId
+        set .fileId [newMenuItem $fileId $file]
+        bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
+        place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
+        incr sbY 26
+        incr fileId
     }
-    $w tag configure bracket -foreground gold
 }
-
-# ADDS VARIABLE TAGS
-proc addVariableTags {w} {
-    set cur 1.0
-    while 1 {
-        set cur [$w search "\$" $cur end]
-        if {$cur eq ""} {break}
-        $w tag add variable $cur "$cur + 1 char wordend"
-        set cur [$w index "$cur wordend"]
-    }
-    $w tag configure variable -foreground DeepSkyBlue
-}
-
-# ADDS FLAG TAGS
-proc addFlagTags {w} {
-    set cur 1.0
-    while 1 {
-        set cur [$w search " -" $cur end]
-        if {$cur eq ""} {break}
-        # Don't highlight if used as minus
-        set nextchar [$w get "$cur + 2 char"]
-        if { $nextchar ne "\ " && $nextchar ne "\""} {
-            $w tag add flag $cur "$cur + 2 char wordend"
-        }
-        set cur [$w index "$cur + 2 char wordend"]
-    }
-    $w tag configure flag -foreground MediumTurquoise
-}
-
-# ADDS KEYWORD TAGS
-proc addKeywordTags {w} {
-    set keywords [ list "proc " "set " "global " "foreach " "if " "while " "wm " "frame " "pack " "return " "event " "bind " ]
-    foreach keyword $keywords {
-        set cur 1.0
-        while 1 {
-            set cur [$w search $keyword $cur end]
-            if {$cur eq ""} {break}
-            $w tag add keyword $cur "$cur wordend"
-            set cur [$w index "$cur wordend"]
-        }
-    }
-    $w tag configure keyword -foreground MediumPurple1
-}
-
-# ADDS HANDLE TAGS
-proc addHandleTags {w} {
-    set cur 1.0
-    while 1 {
-        set cur [$w search " \." $cur end]
-        if {$cur eq ""} {break}
-        $w tag add handle $cur "$cur + 2 char wordend"
-        $w tag remove variable $cur "$cur + 2 char wordend"
-        set cur [$w index "$cur + 2 char wordend"]
-    }
-    $w tag configure handle -foreground CornflowerBlue
-}
-
-# ADDS COMMENT TAGS
-proc addCommentTags {w} {
-    set cur 1.0
-    while 1 {
-        set cur [$w search "\#" $cur end]
-        if {$cur eq ""} {break}
-        # Don't comment out if escaped
-        if {[$w get "$cur - 1 char"] ne "\\"} {
-            $w tag add comment $cur "$cur lineend"
-            $w tag remove bracket $cur "$cur lineend"
-        }
-        set cur [$w index "$cur lineend"]
-    }
-    $w tag configure comment -foreground MediumSeaGreen
-}
-
-proc highlight {} {
-    addBracketTags .textBoxHandle
-    addVariableTags .textBoxHandle
-    addFlagTags .textBoxHandle
-    addKeywordTags .textBoxHandle
-    addHandleTags .textBoxHandle
-    addCommentTags .textBoxHandle
-}
-
-# Sidebar Y position iterator to place widgets at
-set sbY 10
 
 # SEARCH INPUT
 newTextInput "searchInputHandle"
-place .searchInputHandle -in .sidebar -x 10 -y $sbY -width 140 -height 26
-incr sbY 36
+place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
 
 # TEXT BOX
 newTextBox "textBoxHandle"
@@ -163,14 +97,25 @@ place .textBoxHandle -in .body -relwidth 1.0 -relheight 1.0
 # EVENT LISTENERS
 event add <<Save>> <Control-s>
 bind . <<Save>> {saveFile}
+event add <<Refresh>> <Control-r>
+bind . <<Refresh>> {fillSidebarFileMenu}
 
 # FILE LIST
-set files [glob *]
-set fileId 0
-foreach file $files {
-    set .fileId [newMenuItem $fileId $file]
-    bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
-    place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
-    incr sbY 26
-    incr fileId
-}
+fillSidebarFileMenu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -22,9 +22,9 @@ set activeFileType ""
 # SELECT AND APPLY HIGHLIGHT
 proc highlight {} {
     global activeFileType
-    if {$activeFileType=="tcl"} {
+    if {$activeFileType==".tcl"} {
         highlightTcl .textBoxHandle
-    } elseif {$activeFileType=="md"} {
+    } elseif {$activeFileType==".md"} {
         highlightMd .textBoxHandle
     }
 }
@@ -44,12 +44,11 @@ proc newTextBox { inputId } {
     return [text .$inputId -font {Courier -12} -background gray10 -foreground gray70 -borderwidth 0 -highlightthickness 0 -selectbackground DarkSlateGray -selectforeground gray80 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 15 -pady 15 -undo true -autoseparators true -wrap word ]
 }
 
-proc menuItemClicked { origin } {
+proc openFile { origin } {
     global activeFile
     global activeFileType
     set activeFile $origin
-    set activeFileType [lrange [split $activeFile .] end end]
-
+    set activeFileType [file extension $activeFile]
     set fileReader [open $activeFile r]
     .textBoxHandle delete 0.0 end
     .textBoxHandle insert 0.0 [read $fileReader]
@@ -79,7 +78,7 @@ proc fillSidebarFileMenu {} {
     foreach file $files { 
         destroy .$fileId
         set .fileId [newMenuItem $fileId $file]
-        bind .$fileId <ButtonPress-1> [list menuItemClicked $file] 
+        bind .$fileId <ButtonPress-1> [list openFile $file] 
         place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
         incr sbY 26
         incr fileId
@@ -99,6 +98,16 @@ place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
 newTextBox "textBoxHandle"
 place .textBoxHandle -in .body -relwidth 1.0 -relheight 1.0
 
+
+# OPEN FILE OR DIR FROM CMD ARGUMENT
+set argument [lindex $argv 0]
+if { [file isdirectory $argument] } {
+    cd $argument
+} elseif { [file isfile $argument] } {
+    cd [file dirname $argument]
+    openFile [file tail $argument]
+}
+
 # EVENT LISTENERS
 event add <<Save>> <Control-s>
 event add <<Save>> <Command-s>
@@ -109,6 +118,9 @@ bind . <<Refresh>> {fillSidebarFileMenu}
 
 # FILE LIST
 fillSidebarFileMenu
+
+
+
 
 
 

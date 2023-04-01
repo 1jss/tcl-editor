@@ -43,7 +43,7 @@ proc addTclFlagTags {w} {
 
 # ADDS KEYWORD TAGS
 proc addTclKeywordTags {w} {
-    set keywords [ list "proc " "set " "global " "foreach " "if " "while " "wm " "frame " "pack " "return " "event " "bind " "destroy " ]
+    set keywords [ list "proc " "set " "global " "foreach " "if " "elseif " "else " "while " "wm " "frame " "pack " "return " "event " "bind " "destroy " ]
     foreach keyword $keywords {
         set cur 1.0
         while 1 {
@@ -94,5 +94,6 @@ proc highlightTcl {handle} {
     addTclHandleTags $handle
     addTclCommentTags $handle
 }
+
 
 

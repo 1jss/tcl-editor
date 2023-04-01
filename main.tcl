@@ -90,7 +90,7 @@ proc fillSidebarFileMenu {} {
 }
 
 proc indentRow {} {
-  .textBoxHandle insert insert "  "
+  .textBoxHandle insert "insert linestart" "  "
 }
 
 # SEARCH INPUT

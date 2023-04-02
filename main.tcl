@@ -34,9 +34,20 @@ proc newTextInput { inputId } {
   return [text .$inputId -font {Helvetica -12} -background gray15 -foreground gray50 -borderwidth 0 -highlightthickness 1 -highlightcolor gray30 -highlightbackground gray20 -selectborderwidth 0 -selectbackground turquoise -selectforeground turquoise4 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 5 -pady 5]
 }
 
+proc limitText { itemText goalWidth } {
+  set textWidth [font measure {Helvetica -12} $itemText]
+  if { $textWidth <= $goalWidth } { return $itemText }
+  while { $textWidth > $goalWidth } {
+    set itemText [string range $itemText 0 end-1]
+    set textWidth [font measure {Helvetica -12} $itemText...]  
+  }
+  return $itemText... 
+}
+
 # SIDEBAR MENU ITEM
 proc newMenuItem { itemId itemText } {
-  return [label .$itemId -font {Helvetica -12} -text $itemText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx 10]
+  set shortText [limitText $itemText 140]
+  return [label .$itemId -font {Helvetica -12} -text $shortText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx 10]
 }
 
 # TEXT BOX

@@ -54,6 +54,7 @@ proc openFile { origin } {
   .textBoxHandle insert 0.0 [read $fileReader]
   close $fileReader
   highlight
+  wm title . $activeFile
 }
 
 proc saveFile {} {
@@ -72,7 +73,13 @@ proc saveFile {} {
 proc fillSidebarFileMenu {} {
   # Sidebar Y position iterator to place widgets at
   set sbY 46
-  set files [glob *]
+  set searchQuerry [.searchInputHandle get 0.0 "end - 1 char"]
+  if {$searchQuerry eq ""} {
+    set files [glob -nocomplain *]
+  } else {
+    set files [glob -nocomplain *{$searchQuerry}*]
+  }
+  set files [lsort -dictionary $files]
   set fileId 0
   foreach file $files { 
     destroy .$fileId
@@ -119,6 +126,8 @@ event add <<Refresh>> <Command-r>
 bind . <<Refresh>> {fillSidebarFileMenu}
 event add <<Indent>> <Tab>
 bind .textBoxHandle <<Indent>> {[indentRow] [break]}
+event add <<Search>> <Return>
+bind .searchInputHandle <<Search>> {[fillSidebarFileMenu] [break]}
 
 # FILE LIST
 fillSidebarFileMenu

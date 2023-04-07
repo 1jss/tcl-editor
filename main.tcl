@@ -2,10 +2,11 @@
 # https://tcl.tk/man/tcl8.4/
 source highlight-tcl.tcl
 source highlight-md.tcl
+source icon.tcl
 
 wm title . "Textor"
 wm geometry . 640x480+100+100
-wm iconphoto . [image create photo -file icon.gif]
+setIcon
 
 # SIDEBAR FRAME
 frame .sidebar -background gray0 -height 480 -width 160

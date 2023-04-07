@@ -86,6 +86,7 @@ proc addTclCommentTags {w} {
 }
 
 proc highlightTcl {handle} {
+  $handle tag remove comment 0.0 end
   $handle tag remove bracket 0.0 end
   addTclBracketTags $handle
   addTclVariableTags $handle

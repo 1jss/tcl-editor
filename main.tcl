@@ -1,12 +1,14 @@
 #!/usr/bin/wish
-# https://tcl.tk/man/tcl8.4/
+
 source highlight-tcl.tcl
 source highlight-md.tcl
-source icon.tcl
+# source [file join [file dirname [info script]] highlight-tcl.tcl]
+# source [file join [file dirname [info script]] highlight-md.tcl]
 
-wm title . "Textor"
+
+wm title . "Tedit"
 wm geometry . 640x480+100+100
-setIcon
+wm iconphoto . [image create photo -file icon.gif]
 
 # SIDEBAR FRAME
 frame .sidebar -background gray0 -height 480 -width 160
@@ -132,14 +134,14 @@ if { [file isdirectory $argument] } {
 # EVENT LISTENERS
 event add <<Save>> <Control-s>
 event add <<Save>> <Command-s>
-bind . <<Save>> {saveFile}
+bind . <<Save>> "saveFile"
 event add <<Refresh>> <Control-r>
 event add <<Refresh>> <Command-r>
-bind . <<Refresh>> {fillSidebarFileMenu}
+bind . <<Refresh>> "fillSidebarFileMenu"
 event add <<Indent>> <Tab>
-bind .textBoxHandle <<Indent>> {[indentRow] [break]}
+bind .textBoxHandle <<Indent>> "indentRow; break"
 event add <<Search>> <Return>
-bind .searchInputHandle <<Search>> {[fillSidebarFileMenu] [break]}
+bind .searchInputHandle <<Search>> "fillSidebarFileMenu; break"
 
 # FILE LIST
 fillSidebarFileMenu

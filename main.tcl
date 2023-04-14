@@ -5,7 +5,6 @@ source highlight-md.tcl
 # source [file join [file dirname [info script]] highlight-tcl.tcl]
 # source [file join [file dirname [info script]] highlight-md.tcl]
 
-
 wm title . "Tedit"
 wm geometry . 640x480+100+100
 wm iconphoto . [image create photo -file icon.gif]
@@ -21,6 +20,8 @@ pack .body -side left -anchor w -expand true -fill both -after .sidebar
 # DOCUMENT VARIABLES
 set activeFile ""
 set activeFileType ""
+# Sidebar Y scroll position
+set sbY 72
 
 # SELECT AND APPLY HIGHLIGHT
 proc highlight {} {
@@ -53,6 +54,12 @@ proc newMenuItem { itemId itemText } {
   return [label .$itemId -font {Helvetica -12} -text $shortText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx 10]
 }
 
+# ICON ON LABEL
+proc newIcon { itemId itemUrl } {
+  set icon [image create photo  -file $itemUrl]
+  return [label .$itemId -image $icon -background gray15 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
+}
+
 # TEXT BOX
 proc newTextBox { inputId } {
   return [text .$inputId -font {Courier -12} -background gray10 -foreground gray70 -borderwidth 0 -highlightthickness 0 -selectbackground DarkSlateGray -selectforeground gray80 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 15 -pady 15 -undo true -autoseparators true -wrap word ]
@@ -83,10 +90,31 @@ proc saveFile {} {
   highlight
 }
 
+proc openPath { path }  {
+  if { [file isdirectory $path] } {
+    cd $path
+    fillSidebarFileMenu
+  } elseif { [file isfile $path] } {
+    cd [file dirname $path]
+    openFile [file tail $path]
+  }
+}
+
+proc openParent {} {
+  set splitPath [lrange [file split [pwd]] 0 end-1 ]
+  # If parent exists
+  if {[llength $splitPath] > 0} {
+    set newPath [eval [concat {file join} $splitPath]]
+    if {[file isdirectory $newPath]} {
+      cd $newPath
+      fillSidebarFileMenu
+    }
+  }
+}
+
 # FILLS SIDEBAR FILE MENU
 proc fillSidebarFileMenu {} {
-  # Sidebar Y position iterator to place widgets at
-  set sbY 46
+  global sbY
   set searchQuerry [.searchInputHandle get 0.0 "end - 1 char"]
   if {$searchQuerry eq ""} {
     set files [glob -nocomplain *]
@@ -95,16 +123,28 @@ proc fillSidebarFileMenu {} {
   }
   set files [lsort -dictionary $files]
   set fileId 0
-  foreach file $files { 
-    destroy .$fileId
-    set .fileId [newMenuItem $fileId $file]
-    bind .$fileId <ButtonPress-1> [list openFile $file] 
-    place .$fileId -in .sidebar -x 0 -y $sbY -width 160 -height 26
-    incr sbY 26
+  update
+  set sidebarH [winfo height .sidebar]
+  set lsbY $sbY
+
+  foreach file $files {
+    destroy .$fileId  
+    if {$lsbY >= 46 && $lsbY < $sidebarH } {
+      set .fileId [newMenuItem $fileId $file]
+      bind .$fileId <ButtonPress-1> [list openPath $file] 
+      place .$fileId -in .sidebar -x 0 -y $lsbY -width 160 -height 26
+    }
+    incr lsbY 26
     incr fileId
   }
+  # Button for directory navigation
+  destroy .dirUpButton
+  set .dirUpButton [newMenuItem .dirUpButton ".Parent Folder"]
+  place .dirUpButton -in .sidebar -x 0 -y 46 -width 160 -height 26
+  bind .dirUpButton <ButtonPress-1> openParent
+
   # Empty the rest of the list
-  while {$fileId < 100} {
+  while {$fileId < 1000} {
     destroy .$fileId
     incr fileId
   }
@@ -114,9 +154,29 @@ proc indentRow {} {
   .textBoxHandle insert "insert linestart" "  "
 }
 
+proc scrollSidebar {x D} {
+  if {$x <= 160} {
+    global sbY
+    if { [expr $sbY + $D] <= 72 } {
+      incr sbY $D
+      fillSidebarFileMenu
+    }
+  }
+}
+
+proc applySearch {} {
+  global sbY
+  set sbY 72
+  fillSidebarFileMenu
+}
+
 # SEARCH INPUT
 newTextInput "searchInputHandle"
 place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
+set .searchIcon [newIcon searchIcon search.gif]
+place .searchIcon -in .sidebar -x 125 -y 11 -width 24 -height 24
+#set .arrowUpIcon [newIcon arrowUpIcon arrow-up.gif]
+#place .arrowUpIcon -in .sidebar -x 100 -y 11 -width 24 -height 24
 
 # TEXT BOX
 newTextBox "textBoxHandle"
@@ -124,12 +184,11 @@ place .textBoxHandle -in .body -relwidth 1.0 -relheight 1.0
 
 # OPEN FILE OR DIR FROM CMD ARGUMENT
 set argument [lindex $argv 0]
-if { [file isdirectory $argument] } {
-  cd $argument
-} elseif { [file isfile $argument] } {
-  cd [file dirname $argument]
-  openFile [file tail $argument]
-}
+openPath $argument
+#proc ::tk::mac::OpenDocument {args} {
+#  foreach f $args {openPath $f}
+#  fillSidebarFileMenu
+#}
 
 # EVENT LISTENERS
 event add <<Save>> <Control-s>
@@ -141,7 +200,12 @@ bind . <<Refresh>> "fillSidebarFileMenu"
 event add <<Indent>> <Tab>
 bind .textBoxHandle <<Indent>> "indentRow; break"
 event add <<Search>> <Return>
-bind .searchInputHandle <<Search>> "fillSidebarFileMenu; break"
+bind .searchInputHandle <<Search>> "applySearch; break"
+event add <<Scroll>> <MouseWheel>
+bind . <<Scroll>> {scrollSidebar %x %D}
+bind .  <Button-4> {event generate [focus -displayof %W] <MouseWheel> -delta 1}
+bind . <Button-5> {event generate [focus -displayof %W] <MouseWheel> -delta -1}
+
 
 # FILE LIST
 fillSidebarFileMenu

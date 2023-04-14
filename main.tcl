@@ -23,6 +23,10 @@ set activeFileType ""
 # Sidebar Y scroll position
 set sbY 72
 
+# ICON IMAGES
+set arrowUpImage [image create photo -file arrow-up.gif]
+set searchImage [image create photo -file search.gif]
+
 # SELECT AND APPLY HIGHLIGHT
 proc highlight {} {
   global activeFileType
@@ -45,7 +49,7 @@ proc limitText { itemText goalWidth } {
     set itemText [string range $itemText 0 end-1]
     set textWidth [font measure {Helvetica -12} $itemText...]  
   }
-  return $itemText... 
+  return $itemText...
 }
 
 # SIDEBAR MENU ITEM
@@ -55,9 +59,8 @@ proc newMenuItem { itemId itemText } {
 }
 
 # ICON ON LABEL
-proc newIcon { itemId itemUrl } {
-  set icon [image create photo  -file $itemUrl]
-  return [label .$itemId -image $icon -background gray15 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
+proc newIconLabel { itemId image background } {
+  return [label .$itemId -image $image -background $background -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w]
 }
 
 # TEXT BOX
@@ -115,6 +118,7 @@ proc openParent {} {
 # FILLS SIDEBAR FILE MENU
 proc fillSidebarFileMenu {} {
   global sbY
+  global arrowUpImage
   set searchQuerry [.searchInputHandle get 0.0 "end - 1 char"]
   if {$searchQuerry eq ""} {
     set files [glob -nocomplain *]
@@ -138,10 +142,10 @@ proc fillSidebarFileMenu {} {
     incr fileId
   }
   # Button for directory navigation
-  destroy .dirUpButton
-  set .dirUpButton [newMenuItem .dirUpButton ".Parent Folder"]
-  place .dirUpButton -in .sidebar -x 0 -y 46 -width 160 -height 26
-  bind .dirUpButton <ButtonPress-1> openParent
+  destroy .arrowUpIcon
+  set .arrowUpIcon [newIconLabel .arrowUpIcon $arrowUpImage gray0]
+  place .arrowUpIcon -in .sidebar -x 10 -y 46 -width 140 -height 24
+  bind .arrowUpIcon <ButtonPress-1> openParent
 
   # Empty the rest of the list
   while {$fileId < 1000} {
@@ -172,11 +176,10 @@ proc applySearch {} {
 
 # SEARCH INPUT
 newTextInput "searchInputHandle"
+
 place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
-set .searchIcon [newIcon searchIcon search.gif]
+set .searchIcon [newIconLabel .searchIcon $searchImage gray15]
 place .searchIcon -in .sidebar -x 125 -y 11 -width 24 -height 24
-#set .arrowUpIcon [newIcon arrowUpIcon arrow-up.gif]
-#place .arrowUpIcon -in .sidebar -x 100 -y 11 -width 24 -height 24
 
 # TEXT BOX
 newTextBox "textBoxHandle"

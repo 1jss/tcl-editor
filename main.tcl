@@ -13,6 +13,15 @@ wm iconphoto . [image create photo -file icon.gif]
 frame .sidebar -background gray0 -height 480 -width 160
 pack .sidebar -side left -anchor w -expand false -fill y
 
+# FILE MENU FRAME
+canvas .sidecanvas -background green -height 408 -width 160 -confine true
+place .sidecanvas -in .sidebar -x 0 -y 72 -relwidth 1.0 -relheight 1.0
+frame .filemenu -background red -height 480 -width 160
+.sidecanvas create line 0 0 160 408
+.sidecanvas create window 0 0 -anchor nw -window .filemenu
+.sidecanvas configure -scrollregion [list 0 0 160 160]
+#.sidecanvas configure -scrollregion [list 0 0 160 [.sidebar cget -height]]
+
 # BODY FRAME
 frame .body -background gray10 -height 480 -width 480
 pack .body -side left -anchor w -expand true -fill both -after .sidebar
@@ -20,8 +29,6 @@ pack .body -side left -anchor w -expand true -fill both -after .sidebar
 # DOCUMENT VARIABLES
 set activeFile ""
 set activeFileType ""
-# Sidebar Y scroll position
-set sbY 72
 
 # ICON IMAGES
 set arrowUpImage [image create photo -file arrow-up.gif]
@@ -117,8 +124,6 @@ proc openParent {} {
 
 # FILLS SIDEBAR FILE MENU
 proc fillSidebarFileMenu {} {
-  global sbY
-  global arrowUpImage
   set searchQuerry [.searchInputHandle get 0.0 "end - 1 char"]
   if {$searchQuerry eq ""} {
     set files [glob -nocomplain *]
@@ -128,24 +133,18 @@ proc fillSidebarFileMenu {} {
   set files [lsort -dictionary $files]
   set fileId 0
   update
-  set sidebarH [winfo height .sidebar]
-  set lsbY $sbY
-
+  set sidebarH [winfo height .filemenu]
+  set lsbY 0
   foreach file $files {
     destroy .$fileId  
-    if {$lsbY >= 46 && $lsbY < $sidebarH } {
+    if {$lsbY >= -26 && $lsbY < $sidebarH } {
       set .fileId [newMenuItem $fileId $file]
       bind .$fileId <ButtonPress-1> [list openPath $file] 
-      place .$fileId -in .sidebar -x 0 -y $lsbY -width 160 -height 26
+      place .$fileId -in .filemenu -x 0 -y $lsbY -width 160 -height 26
     }
     incr lsbY 26
     incr fileId
   }
-  # Button for directory navigation
-  destroy .arrowUpIcon
-  set .arrowUpIcon [newIconLabel .arrowUpIcon $arrowUpImage gray0]
-  place .arrowUpIcon -in .sidebar -x 10 -y 46 -width 140 -height 24
-  bind .arrowUpIcon <ButtonPress-1> openParent
 
   # Empty the rest of the list
   while {$fileId < 1000} {
@@ -160,26 +159,24 @@ proc indentRow {} {
 
 proc scrollSidebar {x D} {
   if {$x <= 160} {
-    global sbY
-    if { [expr $sbY + $D] <= 72 } {
-      incr sbY $D
-      fillSidebarFileMenu
-    }
+    .sidecanvas yview scroll $D units
   }
 }
 
 proc applySearch {} {
-  global sbY
-  set sbY 72
   fillSidebarFileMenu
 }
 
 # SEARCH INPUT
 newTextInput "searchInputHandle"
-
 place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
 set .searchIcon [newIconLabel .searchIcon $searchImage gray15]
 place .searchIcon -in .sidebar -x 125 -y 11 -width 24 -height 24
+
+# DIRECTORY NAVIGATION
+set .arrowUpIcon [newIconLabel .arrowUpIcon $arrowUpImage gray0]
+place .arrowUpIcon -in .sidebar -x 10 -y 46 -width 140 -height 24
+bind .arrowUpIcon <ButtonPress-1> openParent
 
 # TEXT BOX
 newTextBox "textBoxHandle"
@@ -206,9 +203,14 @@ event add <<Search>> <Return>
 bind .searchInputHandle <<Search>> "applySearch; break"
 event add <<Scroll>> <MouseWheel>
 bind . <<Scroll>> {scrollSidebar %x %D}
-bind .  <Button-4> {event generate [focus -displayof %W] <MouseWheel> -delta 1}
-bind . <Button-5> {event generate [focus -displayof %W] <MouseWheel> -delta -1}
-
+bind . <Button-4> {
+  set window %W
+  if {$window ne ".textBoxHandle"} {scrollSidebar %x -1}
+}
+bind . <Button-5> {
+  set window %W
+  if {$window ne ".textBoxHandle"} {scrollSidebar %x 1}
+}
 
 # FILE LIST
 fillSidebarFileMenu

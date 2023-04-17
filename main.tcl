@@ -14,13 +14,8 @@ frame .sidebar -background gray0 -height 480 -width 160
 pack .sidebar -side left -anchor w -expand false -fill y
 
 # FILE MENU FRAME
-canvas .sidecanvas -background green -height 408 -width 160 -confine true
+canvas .sidecanvas -background gray0 -height 408 -width 160 -confine true -borderwidth 0 -highlightthickness 0
 place .sidecanvas -in .sidebar -x 0 -y 72 -relwidth 1.0 -relheight 1.0
-frame .filemenu -background red -height 480 -width 160
-.sidecanvas create line 0 0 160 408
-.sidecanvas create window 0 0 -anchor nw -window .filemenu
-.sidecanvas configure -scrollregion [list 0 0 160 160]
-#.sidecanvas configure -scrollregion [list 0 0 160 [.sidebar cget -height]]
 
 # BODY FRAME
 frame .body -background gray10 -height 480 -width 480
@@ -132,19 +127,17 @@ proc fillSidebarFileMenu {} {
   }
   set files [lsort -dictionary $files]
   set fileId 0
-  update
-  set sidebarH [winfo height .filemenu]
   set lsbY 0
   foreach file $files {
-    destroy .$fileId  
-    if {$lsbY >= -26 && $lsbY < $sidebarH } {
-      set .fileId [newMenuItem $fileId $file]
-      bind .$fileId <ButtonPress-1> [list openPath $file] 
-      place .$fileId -in .filemenu -x 0 -y $lsbY -width 160 -height 26
-    }
+    destroy .$fileId
+    set .fileId [newMenuItem $fileId $file]
+    bind .$fileId <ButtonPress-1> [list openPath $file] 
+    #place .$fileId -in .filemenu -x 0 -y $lsbY -width 160 -height 26
+    .sidecanvas create window 0 $lsbY -anchor nw -window .$fileId
     incr lsbY 26
     incr fileId
   }
+  .sidecanvas configure -scrollregion [list 0 0 160 $lsbY]
 
   # Empty the rest of the list
   while {$fileId < 1000} {
@@ -159,7 +152,7 @@ proc indentRow {} {
 
 proc scrollSidebar {x D} {
   if {$x <= 160} {
-    .sidecanvas yview scroll $D units
+    .sidecanvas yview scroll [expr -$D] units
   }
 }
 
@@ -167,16 +160,6 @@ proc applySearch {} {
   fillSidebarFileMenu
 }
 
-# SEARCH INPUT
-newTextInput "searchInputHandle"
-place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
-set .searchIcon [newIconLabel .searchIcon $searchImage gray15]
-place .searchIcon -in .sidebar -x 125 -y 11 -width 24 -height 24
-
-# DIRECTORY NAVIGATION
-set .arrowUpIcon [newIconLabel .arrowUpIcon $arrowUpImage gray0]
-place .arrowUpIcon -in .sidebar -x 10 -y 46 -width 140 -height 24
-bind .arrowUpIcon <ButtonPress-1> openParent
 
 # TEXT BOX
 newTextBox "textBoxHandle"
@@ -189,6 +172,21 @@ openPath $argument
 #  foreach f $args {openPath $f}
 #  fillSidebarFileMenu
 #}
+
+# SEARCH INPUT
+newTextInput "searchInputHandle"
+place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
+
+# FILE LIST
+fillSidebarFileMenu
+
+set .searchIcon [newIconLabel .searchIcon $searchImage gray15]
+place .searchIcon -in .sidebar -x 125 -y 11 -width 24 -height 24
+
+# DIRECTORY NAVIGATION
+set .arrowUpIcon [newIconLabel .arrowUpIcon $arrowUpImage gray0]
+place .arrowUpIcon -in .sidebar -x 10 -y 46 -width 140 -height 24
+bind .arrowUpIcon <ButtonPress-1> openParent
 
 # EVENT LISTENERS
 event add <<Save>> <Control-s>
@@ -205,14 +203,9 @@ event add <<Scroll>> <MouseWheel>
 bind . <<Scroll>> {scrollSidebar %x %D}
 bind . <Button-4> {
   set window %W
-  if {$window ne ".textBoxHandle"} {scrollSidebar %x -1}
+  if {$window ne ".textBoxHandle"} {scrollSidebar %x 1}
 }
 bind . <Button-5> {
   set window %W
-  if {$window ne ".textBoxHandle"} {scrollSidebar %x 1}
+  if {$window ne ".textBoxHandle"} {scrollSidebar %x -1}
 }
-
-# FILE LIST
-fillSidebarFileMenu
-
-

@@ -9,8 +9,9 @@
 **Bold**
 
 ### Todo
-- [ ] Navigate up and down in folders
+- [x] Navigate up and down in folders
 - [ ] Unify mac and linux code with checks
 - [ ] Package linux with .desktop file
 - [ ] Search in main editor window
 - [ ] Scroll in sidebar menu
+- [ ] Set DPI from environment

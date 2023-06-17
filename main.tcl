@@ -1,24 +1,35 @@
-#!/usr/bin/wish
+#!/bin/sh
+# Start wish (#!/usr/bin/wish)  \
+exec wish "$0" ${1+"$@"}
 
 source highlight-tcl.tcl
 source highlight-md.tcl
 # source [file join [file dirname [info script]] highlight-tcl.tcl]
 # source [file join [file dirname [info script]] highlight-md.tcl]
+set scale 2
+# if {[info exists env(TK_SCALING)]} { tk scaling $env(TK_SCALING) }
+
+proc dpi { pixles } {
+  global scale
+  return [expr {$pixles*$scale}]
+}
 
 wm title . "Tedit"
-wm geometry . 640x480+100+100
+wm geometry . [dpi 640]x[dpi 480]+100+100
 wm iconphoto . [image create photo -file icon.gif]
 
+tk scaling [expr {1.0/$scale}]
+
 # SIDEBAR FRAME
-frame .sidebar -background gray0 -height 480 -width 160
+frame .sidebar -background gray0 -height [dpi 480] -width [dpi 160]
 pack .sidebar -side left -anchor w -expand false -fill y
 
 # FILE MENU FRAME
-canvas .sidecanvas -background gray0 -height 408 -width 160 -confine true -borderwidth 0 -highlightthickness 0
-place .sidecanvas -in .sidebar -x 0 -y 72 -relwidth 1.0 -relheight 1.0
+canvas .sidecanvas -background gray0 -height [dpi 408] -width [dpi 160] -confine true -borderwidth 0 -highlightthickness 0
+place .sidecanvas -in .sidebar -x 0 -y [dpi 72] -relwidth 1.0 -relheight 1.0
 
 # BODY FRAME
-frame .body -background gray10 -height 480 -width 480
+frame .body -background gray10 -height [dpi 480] -width [dpi 480]
 pack .body -side left -anchor w -expand true -fill both -after .sidebar
 
 # DOCUMENT VARIABLES
@@ -41,7 +52,7 @@ proc highlight {} {
 
 # NORMAL INPUT
 proc newTextInput { inputId } {
-  return [text .$inputId -font {Helvetica -12} -background gray15 -foreground gray50 -borderwidth 0 -highlightthickness 1 -highlightcolor gray30 -highlightbackground gray20 -selectborderwidth 0 -selectbackground turquoise -selectforeground turquoise4 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 5 -pady 5]
+  return [text .$inputId -font {Helvetica -12} -background gray15 -foreground gray50 -borderwidth 0 -highlightthickness 1 -highlightcolor gray30 -highlightbackground gray20 -selectborderwidth 0 -selectbackground turquoise -selectforeground turquoise4 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx [dpi 5] -pady [dpi 5]]
 }
 
 proc limitText { itemText goalWidth } {
@@ -56,8 +67,8 @@ proc limitText { itemText goalWidth } {
 
 # SIDEBAR MENU ITEM
 proc newMenuItem { itemId itemText } {
-  set shortText [limitText $itemText 140]
-  return [label .$itemId -font {Helvetica -12} -text $shortText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx 10]
+  set shortText [limitText $itemText [dpi 140]]
+  return [label .$itemId -font {Helvetica -12} -text $shortText -background gray0 -foreground gray50 -borderwidth 0 -highlightthickness 0 -activebackground gray2 -activeforeground gray60 -anchor w -padx [dpi 10]]
 }
 
 # ICON ON LABEL
@@ -67,7 +78,7 @@ proc newIconLabel { itemId image background } {
 
 # TEXT BOX
 proc newTextBox { inputId } {
-  return [text .$inputId -font {Courier -12} -background gray10 -foreground gray70 -borderwidth 0 -highlightthickness 0 -selectbackground DarkSlateGray -selectforeground gray80 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx 15 -pady 15 -undo true -autoseparators true -wrap word ]
+  return [text .$inputId -font {Courier -12} -background gray10 -foreground gray70 -borderwidth 0 -highlightthickness 0 -selectbackground DarkSlateGray -selectforeground gray80 -insertbackground gray50 -insertwidth 1 -insertofftime 500 -insertontime 500 -padx [dpi 15] -pady [dpi 15] -undo true -autoseparators true -wrap word ]
 }
 
 proc openFile { origin } {
@@ -134,7 +145,7 @@ proc fillSidebarFileMenu {} {
     bind .$fileId <ButtonPress-1> [list openPath $file] 
     #place .$fileId -in .filemenu -x 0 -y $lsbY -width 160 -height 26
     .sidecanvas create window 0 $lsbY -anchor nw -window .$fileId
-    incr lsbY 26
+    incr lsbY [dpi 26]
     incr fileId
   }
   .sidecanvas configure -scrollregion [list 0 0 160 $lsbY]
@@ -151,7 +162,7 @@ proc indentRow {} {
 }
 
 proc scrollSidebar {x D} {
-  if {$x <= 160} {
+  if {$x <= [dpi 160]} {
     .sidecanvas yview scroll [expr -$D] units
   }
 }
@@ -175,17 +186,17 @@ openPath $argument
 
 # SEARCH INPUT
 newTextInput "searchInputHandle"
-place .searchInputHandle -in .sidebar -x 10 -y 10 -width 140 -height 26
+place .searchInputHandle -in .sidebar -x [dpi 10] -y [dpi 10] -width [dpi 140] -height [dpi 26]
 
 # FILE LIST
 fillSidebarFileMenu
 
 set .searchIcon [newIconLabel .searchIcon $searchImage gray15]
-place .searchIcon -in .sidebar -x 125 -y 11 -width 24 -height 24
+place .searchIcon -in .sidebar -x [dpi 125] -y [dpi 11] -width [dpi 24] -height [dpi 24]
 
 # DIRECTORY NAVIGATION
 set .arrowUpIcon [newIconLabel .arrowUpIcon $arrowUpImage gray0]
-place .arrowUpIcon -in .sidebar -x 10 -y 46 -width 140 -height 24
+place .arrowUpIcon -in .sidebar -x [dpi 10] -y [dpi 46] -width [dpi 140] -height [dpi 24]
 bind .arrowUpIcon <ButtonPress-1> openParent
 
 # EVENT LISTENERS

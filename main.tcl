@@ -149,6 +149,7 @@ proc fillSidebarFileMenu {} {
     incr fileId
   }
   .sidecanvas configure -scrollregion [list 0 0 160 [expr {$lsbY+72}]]
+  .sidecanvas yview moveto 0
 
   # Empty the rest of the list
   while {$fileId < 1000} {

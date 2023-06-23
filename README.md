@@ -13,5 +13,5 @@
 - [ ] Unify mac and linux code with checks
 - [ ] Package linux with .desktop file
 - [ ] Search in main editor window
-- [ ] Scroll in sidebar menu
+- [x] Scroll in sidebar menu
 - [ ] Set DPI from environment

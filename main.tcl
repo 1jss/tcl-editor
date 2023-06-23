@@ -6,7 +6,7 @@ source highlight-tcl.tcl
 source highlight-md.tcl
 # source [file join [file dirname [info script]] highlight-tcl.tcl]
 # source [file join [file dirname [info script]] highlight-md.tcl]
-set scale 2
+set scale 1
 # if {[info exists env(TK_SCALING)]} { tk scaling $env(TK_SCALING) }
 
 proc dpi { pixles } {
@@ -148,7 +148,7 @@ proc fillSidebarFileMenu {} {
     incr lsbY [dpi 26]
     incr fileId
   }
-  .sidecanvas configure -scrollregion [list 0 0 160 $lsbY]
+  .sidecanvas configure -scrollregion [list 0 0 160 [expr {$lsbY+72}]]
 
   # Empty the rest of the list
   while {$fileId < 1000} {

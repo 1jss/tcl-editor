@@ -2,10 +2,15 @@
 # Start wish (#!/usr/bin/wish)  \
 exec wish "$0" ${1+"$@"}
 
-source highlight-tcl.tcl
-source highlight-md.tcl
-# source [file join [file dirname [info script]] highlight-tcl.tcl]
-# source [file join [file dirname [info script]] highlight-md.tcl]
+# REQUIRE TCK AND TK
+package require Tcl
+package require Tk
+
+# source highlight-tcl.tcl
+# source highlight-md.tcl
+source [file join [file dirname [info script]] highlight-tcl.tcl]
+source [file join [file dirname [info script]] highlight-md.tcl]
+
 set scale 1
 # if {[info exists env(TK_SCALING)]} { tk scaling $env(TK_SCALING) }
 
@@ -172,14 +177,21 @@ proc applySearch {} {
   fillSidebarFileMenu
 }
 
+# OPEN NEW WINDOW
+proc newWindow {} {
+  interp create child
+  child eval {source [file join [file dirname [info script]] main.tcl]}
+}
 
 # TEXT BOX
 newTextBox "textBoxHandle"
 place .textBoxHandle -in .body -relwidth 1.0 -relheight 1.0
 
 # OPEN FILE OR DIR FROM CMD ARGUMENT
-set argument [lindex $argv 0]
-openPath $argument
+catch {
+  set argument [lindex $argv 0]
+  openPath $argument
+}
 #proc ::tk::mac::OpenDocument {args} {
 #  foreach f $args {openPath $f}
 #  fillSidebarFileMenu
@@ -221,6 +233,9 @@ bind . <Button-5> {
   set window %W
   if {$window ne ".textBoxHandle"} {scrollSidebar %x -1}
 }
+event add <<NewWindow>> <Control-n>
+event add <<NewWindow>> <Command-n>
+bind . <<NewWindow>> "newWindow"
 
 # REMOVE SELECTION ON PASTE
 bind .textBoxHandle <<Paste>> {

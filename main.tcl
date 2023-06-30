@@ -221,3 +221,13 @@ bind . <Button-5> {
   set window %W
   if {$window ne ".textBoxHandle"} {scrollSidebar %x -1}
 }
+
+# REMOVE SELECTION ON PASTE
+bind .textBoxHandle <<Paste>> {
+  catch {
+    catch { %W delete sel.first sel.last }
+    %W insert insert [selection get -displayof %W -selection CLIPBOARD]
+    tkEntrySeeInsert %W
+  }
+  break
+}

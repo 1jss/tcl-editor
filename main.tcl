@@ -187,8 +187,9 @@ proc applySearch {} {
 
 # OPEN NEW WINDOW
 proc newWindow {} {
-  interp create child
-  child eval {source [file join [file dirname [info script]] main.tcl]}
+  set childname [clock seconds]
+  interp create .$childname
+  .$childname eval {source [file join [file dirname [info script]] main.tcl]}
 }
 
 # TEXT BOX
@@ -253,4 +254,8 @@ bind .textBoxHandle <<Paste>> {
     tkEntrySeeInsert %W
   }
   break
+}
+
+proc bgerror {message} {   
+  puts $message
 }

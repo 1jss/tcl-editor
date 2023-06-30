@@ -38,6 +38,7 @@ frame .body -background gray10 -height [dpi 480] -width [dpi 480]
 pack .body -side left -anchor w -expand true -fill both -after .sidebar
 
 # DOCUMENT VARIABLES
+set currentDir [pwd]
 set activeFile ""
 set activeFileType ""
 
@@ -87,11 +88,13 @@ proc newTextBox { inputId } {
 }
 
 proc openFile { origin } {
+  global currentDir
   global activeFile
   global activeFileType
   set activeFile $origin
   set activeFileType [file extension $activeFile]
-  set fileReader [open $activeFile r]
+  set fullPath [file join $currentDir $activeFile]
+  set fileReader [open $fullPath r]
   .textBoxHandle delete 0.0 end
   .textBoxHandle insert 0.0 [read $fileReader]
   close $fileReader
@@ -100,11 +103,13 @@ proc openFile { origin } {
 }
 
 proc saveFile {} {
+  global currentDir
   global activeFile
+  set fullPath [file join $currentDir $activeFile]
   if {$activeFile == ""} {
     return
   } else {
-    set fileWriter [ open $activeFile w ]
+    set fileWriter [ open $fullPath w ]
     puts -nonewline $fileWriter [.textBoxHandle get 0.0 "end - 1 char"]
     close $fileWriter
   }
@@ -112,22 +117,25 @@ proc saveFile {} {
 }
 
 proc openPath { path }  {
-  if { [file isdirectory $path] } {
-    cd $path
+  global currentDir
+  set fullPath [file join $currentDir $path]
+  if { [file isdirectory $fullPath] } {
+    set currentDir $fullPath
     fillSidebarFileMenu
-  } elseif { [file isfile $path] } {
-    cd [file dirname $path]
-    openFile [file tail $path]
+  } elseif { [file isfile $fullPath] } {
+    set currentDir [file dirname $fullPath]
+    openFile [file tail $fullPath]
   }
 }
 
 proc openParent {} {
-  set splitPath [lrange [file split [pwd]] 0 end-1 ]
+  global currentDir
+  set splitPath [lrange [file split $currentDir] 0 end-1 ]
   # If parent exists
   if {[llength $splitPath] > 0} {
     set newPath [eval [concat {file join} $splitPath]]
     if {[file isdirectory $newPath]} {
-      cd $newPath
+      set currentDir $newPath
       fillSidebarFileMenu
     }
   }
@@ -135,11 +143,12 @@ proc openParent {} {
 
 # FILLS SIDEBAR FILE MENU
 proc fillSidebarFileMenu {} {
+  global currentDir
   set searchQuerry [.searchInputHandle get 0.0 "end - 1 char"]
   if {$searchQuerry eq ""} {
-    set files [glob -nocomplain *]
+    set files [glob -directory $currentDir -tails -nocomplain *]
   } else {
-    set files [glob -nocomplain *{$searchQuerry}*]
+    set files [glob -directory $currentDir -tails -nocomplain *{$searchQuerry}*]
   }
   set files [lsort -dictionary $files]
   set fileId 0
@@ -147,8 +156,7 @@ proc fillSidebarFileMenu {} {
   foreach file $files {
     destroy .$fileId
     set .fileId [newMenuItem $fileId $file]
-    bind .$fileId <ButtonPress-1> [list openPath $file] 
-    #place .$fileId -in .filemenu -x 0 -y $lsbY -width 160 -height 26
+    bind .$fileId <ButtonPress-1> [list openPath $file]
     .sidecanvas create window 0 $lsbY -anchor nw -window .$fileId
     incr lsbY [dpi 26]
     incr fileId
